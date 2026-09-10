@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIRIKSHAN — Digital Field Drug Testing & Intelligence Platform</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- jsQR Optical Barcode & QR Code Engine (Local with CDN fallback) -->
+  <script src="jsqr.min.js"></script>
+  <script>if (!window.jsQR) { document.write('<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"><\/script>'); }</script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#040e18',
+              900: '#071A2B',
+              800: '#0c253d',
+              700: '#133454',
+              600: '#1b476f'
+            },
+            electric: '#1C8CFF',
+            cyanAccent: '#49D9E8',
+            amberWarn: '#F6B73C',
+            redAlert: '#E95D63',
+            govGreen: '#10B981'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F4F7FA] text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- ================= TOP GOVTECH NAVIGATION ================= -->
+  <header class="bg-navy-900 text-white border-b border-navy-700 sticky top-0 z-50 shadow-md no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Left: Branding & National Emblem Indicator -->
+        <div class="flex items-center space-x-3">
+          <div class="flex items-center justify-center w-10 h-10 rounded bg-navy-800 border border-cyanAccent/40 shadow-inner">
+            <i data-lucide="shield-check" class="w-6 h-6 text-cyanAccent"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-extrabold text-xl tracking-wider text-white">NIRIKSHAN</span>
+              <span class="text-xs bg-navy-800 text-cyanAccent border border-cyanAccent/30 font-semibold px-1.5 py-0.5 rounded">v1.4.2</span>
+              <span class="text-xs text-amberWarn font-medium hidden md:inline">निरीक्षण</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium tracking-tight">
+              Narcotics Control Bureau • Ministry of Home Affairs, Govt. of India
+            </p>
+          </div>
+        </div>
+
+        <!-- Center: Quick Status Badges -->
+        <div class="hidden lg:flex items-center space-x-4 text-xs">
+          <!-- Live Time -->
+          <div class="flex items-center space-x-1.5 bg-navy-800/80 px-2.5 py-1.5 rounded border border-navy-700">
+            <span class="w-2 h-2 rounded-full bg-govGreen pulse-live"></span>
+            <span class="text-slate-400">IST:</span>
+            <span id="headerClock" class="font-mono text-white font-semibold">14:32:18</span>
+          </div>
+
+          <!-- GPS Lock -->
+          <div class="flex items-center space-x-1.5 bg-navy-800/80 px-2.5 py-1.5 rounded border border-navy-700">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-cyanAccent"></i>
+            <span class="text-slate-400">GPS:</span>
+            <span id="headerGps" class="font-mono text-slate-200">28.6139° N, 77.2090° E</span>
+          </div>
+
+          <!-- Offline / Online Switcher -->
+          <button id="offlineToggleBtn" onclick="toggleOfflineMode()" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded border transition-colors bg-govGreen/10 border-govGreen/40 text-govGreen hover:bg-govGreen/20">
+            <i id="networkIcon" data-lucide="wifi" class="w-3.5 h-3.5"></i>
+            <span id="networkText" class="font-semibold">ONLINE (SYNCED)</span>
+          </button>
+        </div>
+
+        <!-- Right: Active Officer Profile -->
+        <div class="flex items-center space-x-3">
+          <div class="text-right hidden sm:block">
+            <div class="text-xs font-semibold text-white">ASI Rajesh Sharma</div>
+            <div class="text-[10px] text-slate-400 mono-font">DL-8832 • Delhi Zonal Unit</div>
+          </div>
+          <div class="w-9 h-9 rounded-full bg-electric/20 border border-electric/60 flex items-center justify-center text-white font-bold text-xs">
+            RS
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Secondary Sub-Navigation Tabs -->
+      <div class="flex space-x-1 overflow-x-auto py-2 border-t border-navy-800/60 scrollbar-none">
+        <button onclick="switchTab('tab-command')" id="nav-command" class="tab-btn active px-3.5 py-1.5 rounded text-xs font-medium flex items-center space-x-2 text-white bg-electric/20 border border-electric/40">
+          <i data-lucide="layout-dashboard" class="w-4 h-4 text-electric"></i>
+          <span>Command Center</span>
+        </button>
+        <button onclick="switchTab('tab-capture')" id="nav-capture" class="tab-btn px-3.5 py-1.5 rounded text-xs font-medium flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-navy-800 transition">
+          <i data-lucide="camera" class="w-4 h-4 text-cyanAccent"></i>
+          <span>Field Test Capture</span>
+          <span class="bg-electric text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">Demo</span>
+        </button>
+        <button onclick="switchTab('tab-vault')" id="nav-vault" class="tab-btn px-3.5 py-1.5 rounded text-xs font-medium flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-navy-800 transition">
+          <i data-lucide="database" class="w-4 h-4 text-amberWarn"></i>
+          <span>Evidence Vault</span>
+          <span id="vaultBadgeCount" class="bg-navy-800 text-slate-300 text-[10px] px-1.5 py-0.5 rounded border border-navy-700">5</span>
+        </button>
+        <button onclick="switchTab('tab-passport')" id="nav-passport" class="tab-btn px-3.5 py-1.5 rounded text-xs font-medium flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-navy-800 transition">
+          <i data-lucide="file-check-2" class="w-4 h-4 text-govGreen"></i>
+          <span>Court Evidence Slip</span>
+        </button>
+        <button onclick="switchTab('tab-health')" id="nav-health" class="tab-btn px-3.5 py-1.5 rounded text-xs font-medium flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-navy-800 transition">
+          <i data-lucide="heart-pulse" class="w-4 h-4 text-redAlert"></i>
+          <span>Public Health (NMBA)</span>
+          <span class="bg-redAlert/20 text-redAlert text-[10px] font-semibold px-1.5 py-0.2 rounded border border-redAlert/30">Early Warning</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= BANNER: LEGAL NOTICE & ACCREDITATION ================= -->
+  <div class="bg-navy-950 text-slate-300 text-xs py-1.5 px-4 border-b border-navy-800 no-print flex flex-wrap items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-amberWarn/20 text-amberWarn font-semibold text-[10px] border border-amberWarn/30">
+        LEGAL DISCLAIMER
+      </span>
+      <span class="text-slate-400 text-[11px]">
+        Presumptive Field Testing companion under NDPS Act 1985 (Sec. 50/52). Confirmatory testing via State/Central Forensic Science Laboratory (FSL) required.
+      </span>
+    </div>
+    <div class="flex items-center space-x-3 text-[11px] text-slate-400">
+      <span>Map Metric: <strong class="text-slate-200">Relative Activity Index</strong> (NCB Baseline + Field Feed)</span>
+      <span class="text-govGreen font-mono">● 0 Broken Hash Chains</span>
+    </div>
+  </div>
+
+  <!-- ================= MAIN CONTENT WRAPPER ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: COMMAND CENTER (National Operating Picture & Intelligence Map)    -->
+    <!-- ========================================================================= -->
+    <section id="tab-command" class="tab-content block space-y-6">
+      
+      <!-- Top Stat KPI Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <!-- 1. Tests Today -->
+        <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Tests Today</span>
+            <i data-lucide="clipboard-list" class="w-4 h-4 text-electric"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="kpiTestsToday" class="text-2xl font-extrabold text-navy-900 mono-font">1,284</span>
+            <span class="text-[11px] text-govGreen font-semibold flex items-center">+8.4%</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">Across 18 State Units</div>
+        </div>
+
+        <!-- 2. Presumptive Positive -->
+        <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm border-l-4 border-l-redAlert">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Positive Presumptive</span>
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-redAlert"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="kpiPositive" class="text-2xl font-extrabold text-redAlert mono-font">191</span>
+            <span class="text-[11px] text-slate-400">14.8% rate</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">Seizure protocol active</div>
+        </div>
+
+        <!-- 3. Inconclusive Review -->
+        <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm border-l-4 border-l-amberWarn">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Inconclusive / Review</span>
+            <i data-lucide="help-circle" class="w-4 h-4 text-amberWarn"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="kpiInconclusive" class="text-2xl font-extrabold text-amberWarn mono-font">65</span>
+            <span class="text-[11px] text-amberWarn font-medium">Lab dispatch</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">Degraded lighting/glare</div>
+        </div>
+
+        <!-- 4. Active Field Officers -->
+        <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Active Officers</span>
+            <i data-lucide="users" class="w-4 h-4 text-electric"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="kpiOfficers" class="text-2xl font-extrabold text-navy-900 mono-font">42</span>
+            <span class="text-[11px] text-govGreen font-medium">Live GPS</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">NCB, STF & ANC teams</div>
+        </div>
+
+        <!-- 5. Sync Rate & Offline Queue -->
+        <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Cloud Sync Rate</span>
+            <i data-lucide="cloud-check" class="w-4 h-4 text-govGreen"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="kpiSyncRate" class="text-2xl font-extrabold text-govGreen mono-font">98.7%</span>
+            <span id="kpiPendingSync" class="text-[11px] text-slate-400">0 queued</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">Zero data dropouts</div>
+        </div>
+
+        <!-- 6. Evidence Integrity -->
+        <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm border-l-4 border-l-cyanAccent">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Evidence Integrity</span>
+            <i data-lucide="shield-check" class="w-4 h-4 text-cyanAccent"></i>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span id="kpiIntegrity" class="text-2xl font-extrabold text-navy-900 mono-font">100%</span>
+            <span id="kpiBrokenChains" class="text-[11px] text-govGreen font-mono">0 Tampered</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">Cryptographic PKI Verified</div>
+        </div>
+      </div>
+
+      <!-- Main Command Dashboard Panels: Map & Operations -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left: India Seizure & Field-Test Intelligence Choropleth Map (8 cols) -->
+        <div class="lg:col-span-8 bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="text-base font-bold text-navy-900">India Drug Seizure & Field-Test Intelligence Map</h2>
+                <span class="text-[10px] bg-electric/10 text-electric px-2 py-0.5 rounded font-semibold border border-electric/20">LIVE HEATMAP</span>
+              </div>
+              <p class="text-xs text-slate-500">
+                Calculated Activity Index based on NCB official seizures, presumptive tests, incidents & verified inputs.
+              </p>
+            </div>
+            
+            <!-- Map Mode Selector -->
+            <div class="flex items-center bg-slate-100 p-1 rounded-lg text-xs font-medium">
+              <button onclick="setMapMode('historical')" id="mode-historical" class="px-2.5 py-1 rounded transition text-slate-600 hover:text-slate-900">
+                Historical Baseline
+              </button>
+              <button onclick="setMapMode('field')" id="mode-field" class="px-2.5 py-1 rounded transition bg-white text-navy-900 shadow-xs font-semibold">
+                Field Activity
+              </button>
+              <button onclick="setMapMode('live')" id="mode-live" class="px-2.5 py-1 rounded transition text-slate-600 hover:text-slate-900 flex items-center space-x-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-redAlert pulse-live"></span>
+                <span>Live Ops</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Map Content & Interactive SVG -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 my-4 flex-1 items-center">
+            
+            <!-- SVG Map Canvas (7 cols) -->
+            <div class="md:col-span-7 flex flex-col items-center justify-center relative bg-[#071A2B] rounded-xl p-3 overflow-hidden shadow-inner border border-navy-700 min-h-[360px]">
+              
+              <!-- Subtle Radar Overlay -->
+              <div class="absolute inset-0 pointer-events-none opacity-20 flex items-center justify-center">
+                <div class="w-72 h-72 rounded-full border border-cyanAccent/40"></div>
+                <div class="w-48 h-48 rounded-full border border-cyanAccent/30"></div>
+                <div class="w-24 h-24 rounded-full border border-cyanAccent/20"></div>
+                <div class="absolute w-72 h-72 radar-sweep bg-gradient-to-tr from-cyanAccent/10 to-transparent rounded-full"></div>
+              </div>
+
+              <!-- Interactive India Map SVG -->
+              <svg id="indiaSvgMap" viewBox="0 0 600 700" class="w-full max-h-[380px] drop-shadow-lg z-10">
+                <!-- SVG States will be rendered by app.js with state paths, colors and click events -->
+              </svg>
+
+              <!-- Map Legend Overlay -->
+              <div class="absolute bottom-3 left-3 bg-navy-900/90 backdrop-blur border border-navy-700 px-3 py-2 rounded text-[11px] text-slate-300 z-20 space-y-1">
+                <div class="font-semibold text-white text-[10px] uppercase tracking-wider">Activity Index</div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="w-3 h-3 rounded-sm bg-red-600"></span>
+                  <span>Critical (>80)</span>
+                  <span class="w-3 h-3 rounded-sm bg-amber-500 ml-1"></span>
+                  <span>Moderate (60-80)</span>
+                  <span class="w-3 h-3 rounded-sm bg-blue-500 ml-1"></span>
+                  <span>Low (&lt;60)</span>
+                </div>
+              </div>
+
+              <!-- Live Freshness indicator -->
+              <div class="absolute top-3 right-3 bg-navy-900/80 px-2 py-1 rounded text-[10px] text-slate-300 border border-navy-700 flex items-center space-x-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-govGreen"></span>
+                <span>Freshness: Updated 2m ago</span>
+              </div>
+
+            </div>
+
+            <!-- State Detail Drawer / Panel (5 cols) -->
+            <div id="stateDetailBox" class="md:col-span-5 bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between h-full space-y-3">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span id="selectedStateCode" class="text-xs font-mono font-bold bg-navy-900 text-cyanAccent px-2 py-0.5 rounded">PB</span>
+                  <span id="selectedStateTrend" class="text-xs font-semibold text-redAlert bg-redAlert/10 px-2 py-0.5 rounded border border-redAlert/20">▲ UP (+14%)</span>
+                </div>
+                <h3 id="selectedStateName" class="text-lg font-bold text-navy-900 mt-1">Punjab</h3>
+                <p id="selectedStateSubstance" class="text-xs text-slate-600 font-medium">Dominant: <span class="text-navy-900 font-semibold">Heroin / Opioids</span></p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="bg-white p-2.5 rounded border border-slate-200">
+                  <div class="text-slate-400 text-[10px]">Positive Tests</div>
+                  <div id="statePositiveCount" class="text-base font-extrabold text-redAlert mono-font">142</div>
+                </div>
+                <div class="bg-white p-2.5 rounded border border-slate-200">
+                  <div class="text-slate-400 text-[10px]">Inconclusive Tests</div>
+                  <div id="stateInconCount" class="text-base font-extrabold text-amberWarn mono-font">11</div>
+                </div>
+                <div class="bg-white p-2.5 rounded border border-slate-200">
+                  <div class="text-slate-400 text-[10px]">Seizures (NCB Base)</div>
+                  <div id="stateSeizureKg" class="text-base font-extrabold text-navy-900 mono-font">412.5 kg</div>
+                </div>
+                <div class="bg-white p-2.5 rounded border border-slate-200">
+                  <div class="text-slate-400 text-[10px]">Activity Index</div>
+                  <div id="stateActivityIndex" class="text-base font-extrabold text-redAlert mono-font">91.4 / 100</div>
+                </div>
+              </div>
+
+              <div class="text-[11px] bg-blue-50 border border-blue-200 rounded p-2 text-blue-950 space-y-1">
+                <div class="font-semibold flex items-center space-x-1">
+                  <i data-lucide="info" class="w-3.5 h-3.5 text-electric"></i>
+                  <span>Field Intelligence Summary</span>
+                </div>
+                <p id="stateNotes" class="text-[10px] text-blue-900 leading-tight">
+                  High border-radius activity in Amritsar & Gurdaspur. Reagent test kits deployed with STF teams show high Marquis reaction correlation.
+                </p>
+              </div>
+
+              <div class="text-[10px] text-slate-400 font-mono">
+                Sources: <span id="stateSources">NCB Annual Seizures / STF Punjab / NIRIKSHAN</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Footer Disclaimer -->
+          <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-[11px] text-slate-500">
+            <span>Coverage: <strong>18 of 36 States & UTs reporting</strong></span>
+            <span class="italic text-slate-400">Index: Relative activity indicator, not a direct measure of illicit trafficking modules.</span>
+          </div>
+
+        </div>
+
+        <!-- Right: Live Alert Feed & Drug Category Distribution (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+          
+          <!-- Drug Category Distribution Breakdown -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-navy-900 flex items-center space-x-1.5">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-electric"></i>
+                <span>Tested Substance Distribution</span>
+              </h3>
+              <span class="text-[10px] text-slate-400">Today</span>
+            </div>
+
+            <div class="space-y-2.5 text-xs">
+              <div>
+                <div class="flex justify-between text-slate-600 mb-1">
+                  <span>Cannabis (Charas / Ganja)</span>
+                  <span class="font-semibold mono-font">48%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: 48%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-600 mb-1">
+                  <span>Opioids (Heroin / Morphine / Brown Sugar)</span>
+                  <span class="font-semibold mono-font">28%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-redAlert rounded-full" style="width: 28%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-600 mb-1">
+                  <span>ATS / Methamphetamine / Yaba</span>
+                  <span class="font-semibold mono-font">14%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-amberWarn rounded-full" style="width: 14%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-600 mb-1">
+                  <span>Cocaine HCl / Crack</span>
+                  <span class="font-semibold mono-font">6%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-blue-500 rounded-full" style="width: 6%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-600 mb-1">
+                  <span>Synthetic Opioids (Fentanyl / Xylazine)</span>
+                  <span class="font-semibold mono-font text-purple-600">4% (High Risk)</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-purple-600 rounded-full" style="width: 4%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Operational & Integrity Alerts -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center space-x-1.5">
+                <i data-lucide="bell-ring" class="w-4 h-4 text-redAlert"></i>
+                <h3 class="text-sm font-bold text-navy-900">Command Alerts</h3>
+              </div>
+              <span id="alertCountBadge" class="text-[10px] bg-redAlert/10 text-redAlert font-bold px-2 py-0.5 rounded-full border border-redAlert/20">3 Active</span>
+            </div>
+
+            <!-- Scrollable Alerts List -->
+            <div id="alertsContainer" class="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+              <!-- Rendered dynamically by app.js -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: FIELD TEST CAPTURE (Hero Mobile-First Capture & Interpretation)   -->
+    <!-- ========================================================================= -->
+    <section id="tab-capture" class="tab-content hidden space-y-6">
+      
+      <!-- Capture Header Step Indicator -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-navy-900 flex items-center space-x-2">
+            <i data-lucide="scan" class="w-5 h-5 text-electric"></i>
+            <span>Digital Field Test Capture & Automated Interpretation</span>
+          </h2>
+          <p class="text-xs text-slate-500">
+            Mobile-first colorimetric analysis with automated in-frame reference card calibration.
+          </p>
+        </div>
+
+        <!-- Capture Source Mode Switcher -->
+        <div class="flex items-center space-x-2">
+          <span class="text-xs text-slate-500 font-medium">Input Source:</span>
+          <button id="btnSourceDemo" onclick="setCaptureSource('presets')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-electric text-white shadow-xs">
+            Standard Field Presets (Demo)
+          </button>
+          <button id="btnSourceCamera" onclick="setCaptureSource('camera')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+            Live Device Camera
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left: Camera Viewport & Computer Vision Calibration Canvas (7 cols) -->
+        <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col">
+          
+          <!-- Kit Selector Bar -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Select Field Reagent Kit Type</label>
+              <select id="selectKitType" onchange="onKitTypeChange()" class="w-full text-xs font-medium bg-slate-50 border border-slate-300 rounded-lg p-2 text-navy-900 focus:outline-none focus:ring-2 focus:ring-electric">
+                <option value="marquis" selected>Marquis Reagent (Opioids / Heroin / Morphine)</option>
+                <option value="duquenois">Duquenois-Levine (Cannabis / Charas / Ganja)</option>
+                <option value="scott">Scott Reagent (Cocaine HCl / Base)</option>
+                <option value="simons">Simon's Reagent (ATS / Methamphetamine)</option>
+                <option value="fentanyl">Fentanyl Rapid Lateral Flow Strip</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Kit Barcode / Serial Number</label>
+              <div class="flex space-x-1.5">
+                <input id="inputKitSerial" type="text" value="MDT-884299" class="w-full text-xs font-mono bg-slate-50 border border-slate-300 rounded-lg p-2 text-navy-900 focus:outline-none focus:ring-2 focus:ring-electric">
+                <button onclick="openBarcodeScannerModal()" title="Scan Kit Barcode via Optical Scanner" class="px-2.5 py-1 bg-electric/10 border border-electric/30 hover:bg-electric/20 rounded-lg text-electric text-xs font-semibold flex items-center space-x-1">
+                  <i data-lucide="barcode" class="w-4 h-4"></i>
+                  <span class="hidden sm:inline">Scan</span>
+                </button>
+                <button onclick="generateRandomKitSerial()" title="Generate New Serial" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 rounded-lg text-slate-700 text-xs">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Extended Manual Details Toggle & Input Form -->
+          <div class="mb-3 bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs">
+            <div class="flex items-center justify-between cursor-pointer" onclick="toggleManualDetailsDrawer()">
+              <div class="flex items-center space-x-1.5 font-bold text-navy-900">
+                <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-electric"></i>
+                <span>Advanced Field Test & Seizure Parameters (Manual Entry)</span>
+              </div>
+              <span id="manualDrawerToggleText" class="text-[10px] text-electric font-semibold">Expand Details ▼</span>
+            </div>
+
+            <div id="manualDetailsDrawer" class="hidden mt-2.5 pt-2.5 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div>
+                <label class="text-[10px] font-semibold text-slate-500 block mb-0.5">Suspect / Seizure Item Code</label>
+                <input id="inputItemCode" type="text" value="SEZ-2026-DL-088" placeholder="e.g. SEZ-2026-DL-088" class="w-full bg-white border border-slate-300 rounded p-1.5 font-mono text-[11px] text-navy-900">
+              </div>
+              <div>
+                <label class="text-[10px] font-semibold text-slate-500 block mb-0.5">Approx. Seized Quantity</label>
+                <input id="inputQuantity" type="text" value="250 grams (Powder)" placeholder="e.g. 500g / 1kg" class="w-full bg-white border border-slate-300 rounded p-1.5 text-[11px] text-navy-900">
+              </div>
+              <div>
+                <label class="text-[10px] font-semibold text-slate-500 block mb-0.5">Physical Sample Matrix</label>
+                <select id="inputSampleMatrix" class="w-full bg-white border border-slate-300 rounded p-1.5 text-[11px] text-navy-900">
+                  <option value="fine_powder">Fine Crystalline Powder</option>
+                  <option value="brown_sugar">Coarse Brown Powder (Smack)</option>
+                  <option value="plant_matter">Dried Herbal Leaves / Plant Matter</option>
+                  <option value="liquid">Liquid / Syrup Formulation</option>
+                  <option value="tablet">Pressed Tablets / Pills</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] font-semibold text-slate-500 block mb-0.5">Ambient Temperature (°C)</label>
+                <input id="inputTemp" type="number" value="28" class="w-full bg-white border border-slate-300 rounded p-1.5 font-mono text-[11px] text-navy-900">
+              </div>
+              <div>
+                <label class="text-[10px] font-semibold text-slate-500 block mb-0.5">Field Lux Level (Manual)</label>
+                <input id="inputLux" type="number" value="485" class="w-full bg-white border border-slate-300 rounded p-1.5 font-mono text-[11px] text-navy-900">
+              </div>
+              <div>
+                <label class="text-[10px] font-semibold text-slate-500 block mb-0.5">Seizure Officer Badge</label>
+                <input id="inputOfficerBadge" type="text" value="NCB-DEL-0187" class="w-full bg-white border border-slate-300 rounded p-1.5 font-mono text-[11px] text-navy-900">
+              </div>
+            </div>
+          </div>
+
+          <!-- Preset Reaction Selector & 10-Image Gallery (When in Demo Mode) -->
+          <div id="presetSamplesBar" class="mb-3 bg-slate-100 p-2.5 rounded-xl border border-slate-200 space-y-2 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-navy-900 text-[11px] flex items-center space-x-1.5">
+                <i data-lucide="image" class="w-3.5 h-3.5 text-electric"></i>
+                <span>10 Calibrated Test Images (Click to Load & Analyze)</span>
+              </span>
+              <!-- Custom File Upload Button -->
+              <label class="cursor-pointer px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-300 rounded text-[11px] font-semibold text-slate-700 flex items-center space-x-1 shadow-xs transition">
+                <i data-lucide="upload" class="w-3 h-3 text-electric"></i>
+                <span>Upload Custom Image</span>
+                <input type="file" id="customImageInput" accept="image/*" class="hidden" onchange="handleCustomImageUpload(event)">
+              </label>
+            </div>
+
+            <!-- Scrollable 10-Image Cards Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 max-h-[140px] overflow-y-auto pr-1">
+              <button onclick="loadDemoImageByIndex(0)" class="p-1.5 bg-white hover:bg-purple-50 border border-purple-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-purple-900 text-[10px] truncate">1. Opioid (Heroin)</div>
+                <div class="text-[9px] text-purple-700 font-semibold">Marquis • POS (95.8%)</div>
+              </button>
+              <button onclick="loadDemoImageByIndex(1)" class="p-1.5 bg-white hover:bg-emerald-50 border border-emerald-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-emerald-900 text-[10px] truncate">2. Cannabis (Charas)</div>
+                <div class="text-[9px] text-emerald-700 font-semibold">Duquenois • POS (96.8%)</div>
+              </button>
+              <button onclick="loadDemoImageByIndex(2)" class="p-1.5 bg-white hover:bg-blue-50 border border-blue-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-blue-900 text-[10px] truncate">3. Cocaine HCl</div>
+                <div class="text-[9px] text-blue-700 font-semibold">Scott • POS (94.4%)</div>
+              </button>
+              <button onclick="loadDemoImageByIndex(3)" class="p-1.5 bg-white hover:bg-rose-50 border border-rose-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-rose-900 text-[10px] truncate">4. Cutting Agent (Paracetamol)</div>
+                <div class="text-[9px] text-rose-700 font-semibold">Scott • NEG (92.5%)</div>
+              </button>
+              <button onclick="loadDemoImageByIndex(4)" class="p-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-indigo-900 text-[10px] truncate">5. Methamphetamine (Yaba)</div>
+                <div class="text-[9px] text-indigo-700 font-semibold">Simon's • POS (94.8%)</div>
+              </button>
+              <button onclick="loadDemoImageByIndex(5)" class="p-1.5 bg-white hover:bg-red-50 border border-red-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-red-900 text-[10px] truncate">6. Fentanyl Synthetic Cut</div>
+                <div class="text-[9px] text-red-700 font-semibold">Rapid Strip • POS (98.5%)</div>
+              </button>
+              <button onclick="loadDemoImageByIndex(6)" class="p-1.5 bg-white hover:bg-teal-50 border border-teal-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-teal-900 text-[10px] truncate">7. Unadulterated Opioid</div>
+                <div class="text-[9px] text-teal-700 font-semibold">Rapid Strip • NEG (97.2%)</div>
+              </button>
+              <button onclick="loadDemoImageByIndex(7)" class="p-1.5 bg-white hover:bg-amber-50 border border-amber-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-amber-900 text-[10px] truncate">8. Degraded / High Glare</div>
+                <div class="text-[9px] text-amber-700 font-semibold">Quality Gate Fail • INCON</div>
+              </button>
+              <button onclick="loadDemoImageByIndex(8)" class="p-1.5 bg-white hover:bg-sky-50 border border-sky-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-sky-900 text-[10px] truncate">9. Mandrax (Methaqualone)</div>
+                <div class="text-[9px] text-sky-700 font-semibold">Cobalt • POS (93.6%)</div>
+              </button>
+              <button onclick="loadDemoImageByIndex(9)" class="p-1.5 bg-white hover:bg-violet-50 border border-violet-200 rounded text-left transition shadow-2xs">
+                <div class="font-bold text-violet-900 text-[10px] truncate">10. Ketamine HCl</div>
+                <div class="text-[9px] text-violet-700 font-semibold">Morris • POS (95.1%)</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Camera & CV Calibration Viewport -->
+          <div class="relative w-full aspect-video bg-navy-950 rounded-xl overflow-hidden border-2 border-navy-800 shadow-inner flex items-center justify-center">
+            
+            <!-- Video Feed (Used when camera is enabled) -->
+            <video id="webcamVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover hidden"></video>
+
+            <!-- Computer Vision Canvas -->
+            <canvas id="analysisCanvas" width="640" height="360" class="w-full h-full object-contain"></canvas>
+
+            <!-- Dynamic Camera Reticle HUD Overlays -->
+            <div id="cameraHudOverlay" class="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+              
+              <!-- Top HUD row -->
+              <div class="flex justify-between items-center text-[10px] font-mono text-cyanAccent bg-navy-950/70 backdrop-blur px-2.5 py-1 rounded border border-cyanAccent/30">
+                <span class="flex items-center space-x-1">
+                  <span class="w-2 h-2 rounded-full bg-cyanAccent pulse-live"></span>
+                  <span>SPECTRAL CALIBRATION HUD</span>
+                </span>
+                <span id="hudLightingScore">485 LUX • CALIBRATED</span>
+                <span id="hudCardStatus">CARD DETECTED (24 PATCH)</span>
+              </div>
+
+              <!-- Center Target Reticles (Bounding Boxes) -->
+              <div class="relative flex-1 flex items-center justify-center">
+                <!-- QR / Barcode Hit Overlay Pill -->
+                <div id="mainCamQrDetectedTag" class="hidden absolute top-2 bg-govGreen text-white text-[10px] sm:text-[11px] font-mono font-bold px-3 py-1 rounded-full shadow-lg border border-white flex items-center space-x-1.5 z-20 animate-bounce">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5 text-white"></i>
+                  <span id="mainCamQrCodeText">QR CODE DETECTED</span>
+                </div>
+
+                <!-- Reaction Zone Bounding Box -->
+                <div class="border-2 border-dashed border-cyanAccent w-44 h-32 rounded-lg relative flex items-center justify-center">
+                  <div class="corner-tl"></div>
+                  <div class="corner-tr"></div>
+                  <div class="corner-bl"></div>
+                  <div class="corner-br"></div>
+                  <span class="text-[10px] bg-navy-900/80 text-cyanAccent font-mono px-1.5 py-0.5 rounded -top-3 absolute">REACTION ZONE A</span>
+                </div>
+              </div>
+
+              <!-- Bottom HUD Status -->
+              <div class="flex justify-between items-center text-[10px] font-mono text-slate-300 bg-navy-950/70 backdrop-blur px-2.5 py-1 rounded border border-navy-700">
+                <span>FPS: 30 • RES: 1080p</span>
+                <span>COLOR SPACE: CIE-L*a*b* Normalized</span>
+                <span id="hudSharpness">SHARPNESS: 96%</span>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Image Quality Gate Indicators -->
+          <div class="grid grid-cols-4 gap-2 mt-3 text-center text-xs">
+            <div id="gateCard" class="bg-govGreen/10 border border-govGreen/30 text-govGreen p-1.5 rounded">
+              <div class="text-[10px] text-slate-500">Color Card</div>
+              <div class="font-bold">Detected ✓</div>
+            </div>
+            <div id="gateLighting" class="bg-govGreen/10 border border-govGreen/30 text-govGreen p-1.5 rounded">
+              <div class="text-[10px] text-slate-500">Lighting Quality</div>
+              <div class="font-bold">Calibrated ✓</div>
+            </div>
+            <div id="gateGlare" class="bg-govGreen/10 border border-govGreen/30 text-govGreen p-1.5 rounded">
+              <div class="text-[10px] text-slate-500">Glare Penalty</div>
+              <div class="font-bold">Minimal (2%) ✓</div>
+            </div>
+            <div id="gateSharpness" class="bg-govGreen/10 border border-govGreen/30 text-govGreen p-1.5 rounded">
+              <div class="text-[10px] text-slate-500">Image Blur</div>
+              <div class="font-bold">Sharp (94%) ✓</div>
+            </div>
+          </div>
+
+          <!-- Capture & Analysis Button -->
+          <div class="mt-4 flex space-x-3">
+            <button id="btnTriggerCapture" onclick="triggerAnalyzeAndLogCurrentSample()" class="flex-1 bg-electric hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+              <i data-lucide="scan" class="w-5 h-5"></i>
+              <span>Capture, Analyze & Log Evidence Record</span>
+            </button>
+            <button onclick="retakeOrReset()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-3 rounded-xl transition flex items-center justify-center space-x-1 text-xs">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              <span>Reset</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Right: Real-time Analysis Outcome & Evidence Signing Panel (5 cols) -->
+        <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between space-y-4">
+          
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 class="text-sm font-bold text-navy-900 flex items-center space-x-2">
+                <i data-lucide="cpu" class="w-4 h-4 text-electric"></i>
+                <span>Automated Result Interpretation</span>
+              </h3>
+              <span class="text-[10px] mono-font bg-slate-100 px-2 py-0.5 rounded text-slate-600">Model: v1.4.2</span>
+            </div>
+
+            <!-- Google Intelligence Vision Object Detector Banner -->
+            <div id="googleVisionCard" class="mt-3 p-3 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 text-xs space-y-1.5 shadow-2xs">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-1.5 font-bold text-blue-950">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-600"></i>
+                  <span>Google Intelligence Vision AI</span>
+                </div>
+                <span id="visionDetectionBadge" class="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-blue-600 text-white shadow-2xs">
+                  DRUG_REAGENT_POUCH (97.8%)
+                </span>
+              </div>
+              <div class="text-[11px] text-slate-700 flex justify-between items-center">
+                <span>Classified Content: <strong id="visionDetectedObject" class="text-navy-900">Colorimetric Test Pouch</strong></span>
+                <span id="visionCategoryType" class="text-[10px] font-mono text-blue-700 font-semibold bg-white px-1.5 py-0.5 rounded border border-blue-200">Reagent Kit</span>
+              </div>
+            </div>
+
+            <!-- Result Card Box -->
+            <div id="resultOutputCard" class="mt-3 p-4 rounded-xl border-2 border-govGreen bg-emerald-50/50 transition-all">
+              
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Classification</span>
+                <span id="resultPill" class="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-redAlert text-white tracking-wider shadow-xs">
+                  POSITIVE
+                </span>
+              </div>
+
+              <div class="mt-3">
+                <div class="text-xs text-slate-500 font-medium">Suspected Substance Reaction</div>
+                <div id="resultDrugTitle" class="text-lg font-extrabold text-navy-900 mt-0.5">
+                  Opioids (Heroin / Morphine Reaction)
+                </div>
+              </div>
+
+              <!-- Confidence Gauge -->
+              <div class="mt-3">
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-slate-600 font-medium">Confidence Score</span>
+                  <span id="resultConfidenceText" class="font-extrabold mono-font text-navy-900">94.6%</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                  <div id="resultConfidenceBar" class="h-full bg-redAlert rounded-full transition-all duration-500" style="width: 94.6%"></div>
+                </div>
+              </div>
+
+              <!-- Explainability Rationale -->
+              <div class="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-700 space-y-1">
+                <div class="font-semibold text-navy-900 flex items-center space-x-1">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5 text-govGreen"></i>
+                  <span>Explainable Visual Analysis</span>
+                </div>
+                <p id="resultExplainability" class="text-[11px] text-slate-600 leading-relaxed">
+                  Reaction zone extracted hue (H: 284°, S: 82%, V: 34%) aligns with verified pharmaceutical diacetylmorphine Marquis reagent reaction benchmark.
+                </p>
+              </div>
+
+              <!-- Mandatory Presumptive Disclaimer -->
+              <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-[11px] text-amber-900">
+                <strong>Statutory Legal Notice:</strong> This is a presumptive field-test result for screening purposes only. Laboratory confirmatory analysis (GC-MS/HPLC) at FSL is mandatory under Section 50/52 of the NDPS Act.
+              </div>
+
+              <!-- GPT Model Knowledge & Multi-Source Forensic Analysis Dashboard -->
+              <div id="gptAnalysisContainer" class="hidden mt-3 space-y-2.5">
+                <div class="border-t border-slate-200 pt-2.5">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-1.5">
+                      <i data-lucide="brain" class="w-4 h-4 text-purple-600"></i>
+                      <span class="text-xs font-extrabold text-navy-900">GPT Intelligence • Multi-Source Analysis</span>
+                    </div>
+                    <span class="text-[9px] font-mono bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded border border-purple-200 font-bold">KNOWLEDGE ENGINE v1.4.2</span>
+                  </div>
+
+                  <!-- Spectral Chromophore Profile -->
+                  <div id="gptSpectralProfile" class="bg-gradient-to-r from-slate-50 to-purple-50/50 p-2.5 rounded-lg border border-slate-200 text-xs">
+                    <!-- Rendered dynamically by app.js -->
+                  </div>
+
+                  <!-- Biochemical Reaction Mechanism -->
+                  <div id="gptReactionMechanism" class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs mt-2">
+                    <!-- Rendered dynamically by app.js -->
+                  </div>
+
+                  <!-- Multi-Source Citations -->
+                  <div id="gptCitations" class="bg-blue-50/50 p-2.5 rounded-lg border border-blue-200 text-xs mt-2">
+                    <!-- Rendered dynamically by app.js -->
+                  </div>
+
+                  <!-- Adulterant Risk Matrix -->
+                  <div id="gptAdulterantRisk" class="bg-red-50/50 p-2.5 rounded-lg border border-red-200 text-xs mt-2">
+                    <!-- Rendered dynamically by app.js -->
+                  </div>
+
+                  <!-- Field SOP Checklist -->
+                  <div id="gptFieldSOP" class="bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-200 text-xs mt-2">
+                    <!-- Rendered dynamically by app.js -->
+                  </div>
+
+                  <!-- GPT Engine Footer -->
+                  <div id="gptEngineFooter" class="pt-1.5 mt-2 border-t border-slate-200/60">
+                    <!-- Rendered dynamically by app.js -->
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Metadata & Officer Identity Form -->
+          <div class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+            <div class="font-bold text-navy-900 flex items-center space-x-1.5 pb-2 border-b border-slate-200">
+              <i data-lucide="file-badge" class="w-4 h-4 text-electric"></i>
+              <span>Digital Chain-of-Custody Metadata</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <span class="text-slate-400 text-[10px] block">Test ID</span>
+                <span id="dispTestId" class="mono-font font-bold text-navy-900">NIR-2026-0909-001289</span>
+              </div>
+              <div>
+                <span class="text-slate-400 text-[10px] block">Case Number</span>
+                <input id="inputCaseId" type="text" value="CASE-2026-NCB-00495" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 font-mono text-[11px] text-navy-900">
+              </div>
+              <div>
+                <span class="text-slate-400 text-[10px] block">Operator ID</span>
+                <span class="mono-font text-slate-800">NCB-DEL-0187 (ASI R. Sharma)</span>
+              </div>
+              <div>
+                <span class="text-slate-400 text-[10px] block">Agency & Unit</span>
+                <span class="text-slate-800">Narcotics Control Bureau (DZU)</span>
+              </div>
+              <div class="col-span-2">
+                <span class="text-slate-400 text-[10px] block">Field Seizure Location</span>
+                <input id="inputLocation" type="text" value="Old Delhi Railway Freight Terminal, Delhi" class="w-full bg-white border border-slate-300 rounded px-2 py-1 text-[11px] text-navy-900">
+              </div>
+            </div>
+          </div>
+
+          <!-- Primary Call to Action: Sign & Commit to Evidence Vault -->
+          <button id="btnSignAndCommit" onclick="signAndCommitRecord()" class="w-full bg-navy-900 hover:bg-navy-800 text-white font-bold py-3 px-4 rounded-xl shadow-lg border border-cyanAccent/40 flex items-center justify-center space-x-2 transition">
+            <i data-lucide="key" class="w-4 h-4 text-cyanAccent"></i>
+            <span>Generate Cryptographically Signed Evidence Record</span>
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- Live Recently Logged Seizure Tests Stream -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-govGreen pulse-live"></span>
+            <h3 class="text-xs font-bold text-navy-900 uppercase tracking-wider">Live Logged Field Tests (Active Session)</h3>
+          </div>
+          <button onclick="switchTab('tab-vault')" class="text-electric hover:underline text-xs font-semibold flex items-center space-x-1">
+            <span>View Full Evidence Vault</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="p-2.5">Test ID</th>
+                <th class="p-2.5">Kit Serial</th>
+                <th class="p-2.5">Substance</th>
+                <th class="p-2.5">Presumptive Result</th>
+                <th class="p-2.5">Record SHA-256 Digest</th>
+                <th class="p-2.5 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="recentLoggedTestsBody" class="divide-y divide-slate-100 font-mono text-[11px]">
+              <!-- Dynamically populated by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: EVIDENCE VAULT & TAMPER-EVIDENT VERIFICATION (Judges' Aha Moment) -->
+    <!-- ========================================================================= -->
+    <section id="tab-vault" class="tab-content hidden space-y-6">
+      
+      <!-- Vault Header & Action Controls -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center space-x-2">
+            <h2 class="text-base font-bold text-navy-900">Immutable Evidence Vault & Integrity Verifier</h2>
+            <span class="text-xs bg-govGreen/10 text-govGreen border border-govGreen/30 font-semibold px-2 py-0.5 rounded">
+              PKI SHA-256 Validated
+            </span>
+          </div>
+          <p class="text-xs text-slate-500">
+            Searchable log of all conducted field tests with cryptographic image hashes, digital signatures, and chain-of-custody tracking.
+          </p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <button onclick="refreshVaultRecords()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center space-x-1">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Refresh Vault</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search & Multi-filter Bar -->
+      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+        <div>
+          <label class="text-[10px] font-semibold text-slate-500 block mb-1">Search Case / Test / Officer</label>
+          <input id="vaultSearch" type="text" placeholder="Search ID, Officer, Location..." onkeyup="filterVaultTable()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-electric focus:outline-none">
+        </div>
+        <div>
+          <label class="text-[10px] font-semibold text-slate-500 block mb-1">Drug Category</label>
+          <select id="vaultFilterDrug" onchange="filterVaultTable()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-electric focus:outline-none">
+            <option value="">All Substances</option>
+            <option value="Opioids">Opioids (Heroin)</option>
+            <option value="Cannabis">Cannabis (Charas)</option>
+            <option value="Cocaine">Cocaine HCl</option>
+            <option value="Methamphetamine">Methamphetamine</option>
+            <option value="Fentanyl">Synthetic Fentanyl</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] font-semibold text-slate-500 block mb-1">State / Zonal Unit</label>
+          <select id="vaultFilterState" onchange="filterVaultTable()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-electric focus:outline-none">
+            <option value="">All States</option>
+            <option value="Delhi">Delhi</option>
+            <option value="Punjab">Punjab</option>
+            <option value="Maharashtra">Maharashtra</option>
+            <option value="Rajasthan">Rajasthan</option>
+            <option value="West Bengal">West Bengal</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] font-semibold text-slate-500 block mb-1">Presumptive Result</label>
+          <select id="vaultFilterResult" onchange="filterVaultTable()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-electric focus:outline-none">
+            <option value="">All Outcomes</option>
+            <option value="POSITIVE">Positive</option>
+            <option value="NEGATIVE">Negative</option>
+            <option value="INCONCLUSIVE">Inconclusive</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] font-semibold text-slate-500 block mb-1">Integrity Status</label>
+          <select id="vaultFilterStatus" onchange="filterVaultTable()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-electric focus:outline-none">
+            <option value="">All Statuses</option>
+            <option value="VERIFIED">Verified</option>
+            <option value="PENDING_REVIEW">Pending Review</option>
+            <option value="TAMPER_ALERT">Tamper Alert</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Main Layout: Evidence Log Table + Detailed Inspection Panel -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Evidence Records Table (7 cols) -->
+        <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div class="p-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-xs">
+            <span class="font-bold text-navy-900">Seizure Evidence Log</span>
+            <span id="recordCountText" class="text-slate-500 font-mono">Showing 5 records</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Test ID / Case</th>
+                  <th class="p-3">Substance Category</th>
+                  <th class="p-3">Result</th>
+                  <th class="p-3">Integrity Status</th>
+                  <th class="p-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="vaultTableBody" class="divide-y divide-slate-100">
+                <!-- Dynamically populated by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Evidence Inspection & Interactive Tamper Demo Drawer (5 cols) -->
+        <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col justify-between space-y-4">
+          
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="shield" class="w-4 h-4 text-electric"></i>
+                <h3 class="text-sm font-bold text-navy-900">Evidence Record Inspector</h3>
+              </div>
+              <span id="inspectStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-govGreen/10 text-govGreen border border-govGreen/30">
+                VERIFIED
+              </span>
+            </div>
+
+            <!-- Inspect Content -->
+            <div class="mt-3 space-y-3">
+              
+              <!-- Image & Visual Hash Preview -->
+              <div class="bg-navy-950 rounded-lg p-3 text-white flex space-x-3 items-center border border-navy-800">
+                <div class="w-20 h-16 bg-navy-900 rounded overflow-hidden flex items-center justify-center border border-navy-700">
+                  <img id="inspectImageThumb" src="" alt="Test pouch" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1 text-[11px] font-mono overflow-hidden">
+                  <div class="text-cyanAccent text-[10px] font-bold">SHA-256 IMAGE DIGEST</div>
+                  <div id="inspectImageHash" class="text-slate-300 truncate text-[10px]">8d63a948e9c402b1f83c18b764a8520df9420b9e84726511a3b8392ef401af10</div>
+                  <div class="text-slate-400 text-[10px] mt-1">PKI Sign: <span id="inspectSigShort" class="text-govGreen">Valid (ED25519-GOV)</span></div>
+                </div>
+              </div>
+
+              <!-- Detailed Field Metadata Grid -->
+              <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Test ID:</span>
+                  <span id="inspectTestId" class="font-bold mono-font text-navy-900">NIR-2026-0909-001284</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Case Reference:</span>
+                  <span id="inspectCaseId" class="mono-font text-slate-800">CASE-2026-NCB-00481</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Officer / Unit:</span>
+                  <span id="inspectOfficer" class="text-slate-800">ASI Rajesh Sharma (NCB Delhi)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Timestamp:</span>
+                  <span id="inspectTimestamp" class="mono-font text-slate-800">2026-09-09T14:32:18Z</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">GPS Coordinates:</span>
+                  <span id="inspectGps" class="mono-font text-slate-800">28.6139° N, 77.2090° E</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Kit Serial:</span>
+                  <span id="inspectKitSerial" class="mono-font text-slate-800">MDT-884291 (Marquis)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Presumptive Result:</span>
+                  <span id="inspectResult" class="font-bold text-redAlert">POSITIVE (94.6% Conf)</span>
+                </div>
+              </div>
+
+              <!-- Chain of Custody Mini-Timeline -->
+              <div>
+                <span class="text-xs font-bold text-navy-900 block mb-1.5 flex items-center space-x-1">
+                  <i data-lucide="link" class="w-3.5 h-3.5 text-electric"></i>
+                  <span>Chain of Custody Events</span>
+                </span>
+                <div id="inspectChainEvents" class="space-y-1.5 text-[11px]">
+                  <!-- Rendered by app.js -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ================= JUDGES DEMO ACTION BOX ================= -->
+          <div class="pt-3 border-t border-slate-200 space-y-2">
+            
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="font-bold text-navy-900">Cryptographic Integrity Controls:</span>
+              <span class="text-[10px] text-slate-400">Live WebCrypto API</span>
+            </div>
+
+            <!-- 1. Verify Evidence Integrity Button -->
+            <button onclick="verifyCurrentRecordIntegrity()" class="w-full bg-electric hover:bg-blue-600 text-white font-bold py-2.5 px-3 rounded-lg text-xs shadow-sm flex items-center justify-center space-x-2 transition">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <span>Verify Evidence Integrity</span>
+            </button>
+
+            <!-- 2. SIMULATE EVIDENCE TAMPERING BUTTON (THE HACKATHON WINNING DEMO) -->
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button onclick="simulateTamperRecord()" class="bg-red-50 hover:bg-red-100 text-redAlert border border-red-300 font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center space-x-1 transition">
+                <i data-lucide="alert-octagon" class="w-3.5 h-3.5"></i>
+                <span>Simulate Tampering</span>
+              </button>
+              <button onclick="restoreRecordFromTamper()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 px-2 rounded-lg text-xs flex items-center justify-center space-x-1 transition">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>Restore Clean</span>
+              </button>
+            </div>
+
+            <div class="text-[10px] text-slate-500 italic text-center">
+              Judges Demo: "Simulate Tampering" modifies coordinates/hash to prove cryptographic breach detection in real time.
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: COURT EVIDENCE PASSPORT (NDPS Presumptive Slip & QR Verification) -->
+    <!-- ========================================================================= -->
+    <section id="tab-passport" class="tab-content hidden space-y-6">
+      
+      <!-- Slip Actions Bar -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 no-print">
+        <div>
+          <h2 class="text-base font-bold text-navy-900 flex items-center space-x-2">
+            <i data-lucide="award" class="w-5 h-5 text-govGreen"></i>
+            <span>Court-Admissible Evidence Passport (Form NDPS-PT-1)</span>
+          </h2>
+          <p class="text-xs text-slate-500">
+            Standardized presumptive testing slip generated in compliance with Section 50 & 52 of the NDPS Act 1985.
+          </p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <button onclick="window.print()" class="bg-navy-900 hover:bg-navy-800 text-white font-semibold px-4 py-2 rounded-lg text-xs flex items-center space-x-1.5 shadow-sm transition">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Print Evidence Slip</span>
+          </button>
+          <button onclick="exportEvidenceJson()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-lg text-xs flex items-center space-x-1 transition">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Export Canonical JSON</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Court Slip Certificate Document -->
+      <div class="bg-white border-2 border-slate-800 rounded-xl shadow-lg max-w-4xl mx-auto p-6 sm:p-10 space-y-6 court-slip-container text-slate-900">
+        
+        <!-- Official Gov Header -->
+        <div class="border-b-2 border-slate-800 pb-4 text-center space-y-1">
+          <div class="text-xs font-bold uppercase tracking-widest text-slate-600">Government of India • Ministry of Home Affairs</div>
+          <div class="text-xl font-extrabold uppercase tracking-tight text-navy-900">Narcotics Control Bureau</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-700">Digital Field Presumptive Testing & Chain-of-Custody Certificate</div>
+          <div class="text-[11px] font-mono text-slate-500">FORM NDPS-PT-1 (Under Rules framed pursuant to Section 50 & 52 of NDPS Act, 1985)</div>
+        </div>
+
+        <!-- Top Certificate Reference Line -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3 border border-slate-300 rounded-lg text-xs mono-font">
+          <div>
+            <span class="text-slate-500 block text-[10px]">EVIDENCE PASSPORT ID</span>
+            <span id="slipTestId" class="font-bold text-navy-900">NIR-2026-0909-001284</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block text-[10px]">CASE NUMBER</span>
+            <span id="slipCaseId" class="font-bold text-navy-900">CASE-2026-NCB-00481</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block text-[10px]">CAPTURED TIMESTAMP</span>
+            <span id="slipTimestamp" class="text-navy-900">2026-09-09 14:32:18 UTC</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block text-[10px]">INTEGRITY SEAL</span>
+            <span class="text-govGreen font-bold">DIGITALLY SIGNED ✓</span>
+          </div>
+        </div>
+
+        <!-- Substance & Test Result Section -->
+        <div class="border border-slate-300 rounded-lg overflow-hidden text-xs">
+          <div class="bg-slate-100 px-3 py-2 font-bold text-navy-900 border-b border-slate-300 flex justify-between items-center">
+            <span>PART I: CHEMICAL FIELD TEST CLASSIFICATION</span>
+            <span class="text-[10px] bg-white px-2 py-0.5 rounded border border-slate-300">Presumptive Screening</span>
+          </div>
+          <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div class="space-y-1 md:col-span-2">
+              <div class="flex justify-between border-b border-slate-100 py-1">
+                <span class="text-slate-500">Tested Reagent Kit:</span>
+                <span id="slipKitType" class="font-semibold text-navy-900">Marquis Reagent Field Pouch (S/N: MDT-884291)</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-100 py-1">
+                <span class="text-slate-500">Target Chemical Class:</span>
+                <span id="slipDrugCategory" class="font-semibold text-navy-900">Opioids (Heroin / Diacetylmorphine)</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-100 py-1">
+                <span class="text-slate-500">Presumptive Finding:</span>
+                <span id="slipResult" class="font-extrabold text-redAlert uppercase text-sm">POSITIVE (Presumptive Reaction Detected)</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-100 py-1">
+                <span class="text-slate-500">Algorithmic Confidence:</span>
+                <span id="slipConfidence" class="font-mono font-bold text-navy-900">94.6%</span>
+              </div>
+              <div class="flex justify-between py-1">
+                <span class="text-slate-500">Spectrophotometric Quality:</span>
+                <span id="slipQuality" class="text-slate-700">Calibrated (In-Frame Reference Color Card Present, 480 Lux)</span>
+              </div>
+            </div>
+
+            <!-- Calibrated Visual Evidence Thumbnail -->
+            <div class="flex flex-col items-center justify-center p-2 bg-slate-50 border border-slate-200 rounded">
+              <div class="w-32 h-24 bg-navy-950 rounded overflow-hidden border border-slate-400">
+                <img id="slipImageThumb" src="" alt="Evidence reaction" class="w-full h-full object-cover">
+              </div>
+              <span class="text-[9px] text-slate-500 mt-1 font-mono">Calibrated Pouch Capture</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cryptographic Proof & QR Passport Box -->
+        <div class="border border-slate-300 rounded-lg p-4 bg-slate-50 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex-1 space-y-1.5 mono-font">
+              <div class="font-bold text-navy-900 text-xs">PART II: CRYPTOGRAPHIC VERIFICATION & HASH ANCHOR</div>
+              <div class="text-[11px] text-slate-700">
+                <strong class="text-slate-900">Image SHA-256:</strong> 
+                <span id="slipImageHash" class="break-all text-[10px] text-slate-600 block">8d63a948e9c402b1f83c18b764a8520df9420b9e84726511a3b8392ef401af10</span>
+              </div>
+              <div class="text-[11px] text-slate-700">
+                <strong class="text-slate-900">Record SHA-256:</strong> 
+                <span id="slipRecordHash" class="break-all text-[10px] text-slate-600 block">3f529bb2893ac1d8e579294efca51320cfb890a21074a38b341fa16d7a46c101</span>
+              </div>
+              <div class="text-[11px] text-slate-700">
+                <strong class="text-slate-900">Gov PKI Signature:</strong> 
+                <span id="slipSignature" class="break-all text-[10px] text-govGreen block">SIG-ED25519-GOV-IN-NCB-7742-DELHI-8832a8f9c0e29b1</span>
+              </div>
+            </div>
+
+            <!-- Court Verification Dynamic QR Code -->
+            <div class="flex flex-col items-center justify-center p-3 bg-white border border-slate-300 rounded-lg">
+              <canvas id="courtQrCanvas" width="100" height="100" class="w-24 h-24"></canvas>
+              <span class="text-[9px] text-slate-500 font-bold mt-1 uppercase tracking-wider">Judicial Scan QR</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seizure Officer & Witness Certification -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-300 text-xs">
+          <div class="space-y-1">
+            <span class="font-bold text-navy-900 block">Investigating / Seizure Officer:</span>
+            <div id="slipOfficerName" class="font-semibold text-slate-800">ASI Rajesh Sharma (DL-8832)</div>
+            <div class="text-slate-500 text-[11px]">Delhi Zonal Unit, Narcotics Control Bureau</div>
+            <div class="pt-6 border-b border-slate-400 w-48"></div>
+            <span class="text-[10px] text-slate-400">Digital Seal & Signature Authorized</span>
+          </div>
+
+          <div class="space-y-1">
+            <span class="font-bold text-navy-900 block">Chain of Custody Handover Notice:</span>
+            <p class="text-[11px] text-slate-600 leading-tight">
+              Sample pouch sealed under formal Panchnama in accordance with NDPS Standing Order 1/88. Dispatched for quantitative chemical analysis to the Central Forensic Science Laboratory (CFSL).
+            </p>
+          </div>
+        </div>
+
+        <!-- Bottom Statutory Bar -->
+        <div class="text-[10px] text-slate-500 border-t border-slate-200 pt-3 text-center">
+          NIRIKSHAN Digital Evidence Record • Generated automatically via secure tamper-evident mobile companion • Admissible as corroborative electronic record under Section 65B, Indian Evidence Act 1872.
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: PUBLIC HEALTH & PREVENTION (Nasha Mukt Bharat Abhiyaan)            -->
+    <!-- ========================================================================= -->
+    <section id="tab-health" class="tab-content hidden space-y-6">
+      
+      <!-- NMBA Header -->
+      <div class="bg-gradient-to-r from-navy-900 to-navy-800 text-white p-5 rounded-xl border border-navy-700 shadow-md flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="px-2.5 py-1 rounded bg-redAlert/20 text-redAlert font-bold text-xs border border-redAlert/40 flex items-center space-x-1">
+              <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+              <span>EARLY WARNING SYSTEM</span>
+            </span>
+            <h2 class="text-base font-bold tracking-wide">Nasha Mukt Bharat Abhiyaan (NMBA) Integration</h2>
+          </div>
+          <p class="text-xs text-slate-300 mt-1 max-w-2xl">
+            Beyond enforcement: Transforming field drug testing data into proactive public health harm reduction, synthetic adulterant warnings, and rehabilitation resource planning.
+          </p>
+        </div>
+
+        <div class="flex items-center space-x-3 text-xs">
+          <div class="bg-navy-950/80 px-3 py-2 rounded-lg border border-navy-700 text-center">
+            <div class="text-[10px] text-slate-400">Monthly Rehab Referrals</div>
+            <div id="healthTotalReferrals" class="font-extrabold text-cyanAccent mono-font text-base">709</div>
+          </div>
+          <div class="bg-navy-950/80 px-3 py-2 rounded-lg border border-navy-700 text-center">
+            <div class="text-[10px] text-slate-400">Available De-addiction Beds</div>
+            <div id="healthTotalBeds" class="font-extrabold text-govGreen mono-font text-base">342</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Critical Health Alert: Synthetic Adulterant Detection -->
+      <div class="bg-red-50 border-2 border-redAlert/60 rounded-xl p-4 flex items-start space-x-4">
+        <div class="p-2 bg-redAlert text-white rounded-lg">
+          <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+        </div>
+        <div class="flex-1 text-xs">
+          <div class="flex items-center space-x-2">
+            <h3 class="text-sm font-extrabold text-red-900">CRITICAL PUBLIC HEALTH WARNING: Fentanyl & Industrial Sedative Contamination</h3>
+            <span class="bg-redAlert text-white font-bold text-[10px] px-2 py-0.5 rounded">HIGH OVERDOSE RISK</span>
+          </div>
+          <p class="text-red-800 mt-1 leading-relaxed">
+            Presumptive lateral flow test kits in Central Delhi & Amritsar detected trace fentanyl analogs and xylazine adulteration in street-level 'Smack' samples. An automated warning has been transmitted to civil emergency hospitals, de-addiction centers, and state medical departments for stocking Naloxone reversal agents.
+          </p>
+          <div class="mt-2 flex items-center space-x-3 text-[11px] text-red-900 font-medium">
+            <span>● <strong>Action:</strong> Naloxone auto-injectors dispatched to 14 high-risk urban police stations.</span>
+            <span>● <strong>Hospital Alert:</strong> Safdarjung, AIIMS, and Amritsar Civil Hospital notified.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- District Health & Harm Reduction Capacity Grid -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 text-xs">
+          <div>
+            <h3 class="font-bold text-navy-900 text-sm">District De-addiction Capacity & Positivity Correlation</h3>
+            <p class="text-slate-500 text-[11px]">Matching enforcement test rates with health department rehabilitation capacity.</p>
+          </div>
+          <span class="text-slate-400 font-mono text-[11px]">Ministry of Social Justice & Empowerment Alignment</span>
+        </div>
+
+        <div class="overflow-x-auto mt-3">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="p-3">District / State</th>
+                <th class="p-3">Opioid Positivity Rate</th>
+                <th class="p-3">Threat Level</th>
+                <th class="p-3">De-addiction Beds</th>
+                <th class="p-3">Naloxone Stock</th>
+                <th class="p-3">Rehab Referrals</th>
+                <th class="p-3">Clinical Advisory</th>
+              </tr>
+            </thead>
+            <tbody id="healthTableBody" class="divide-y divide-slate-100">
+              <!-- Dynamically populated by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================= JUDGES TAMPER ALERT MODAL ================= -->
+  <div id="tamperBreachModal" class="fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full border-4 border-redAlert p-6 shadow-2xl tamper-breach-active space-y-4">
+      <div class="flex items-center space-x-3 text-redAlert">
+        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+          <i data-lucide="shield-alert" class="w-7 h-7 text-redAlert"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-black text-redAlert tracking-wide">🚨 EVIDENCE INTEGRITY BREACH DETECTED</h3>
+          <p class="text-xs text-slate-600 font-semibold">Cryptographic Hash Chain Broken • Inadmissible in Court</p>
+        </div>
+      </div>
+
+      <div class="bg-red-50 border border-red-200 rounded-xl p-3.5 text-xs text-slate-800 space-y-2">
+        <div class="font-bold text-red-900 flex items-center justify-between">
+          <span>Verification Failure Rationale:</span>
+          <span class="mono-font bg-redAlert text-white px-2 py-0.5 rounded text-[10px]">MISMATCH</span>
+        </div>
+        <p id="tamperModalReason" class="text-[11px] text-red-800 leading-relaxed">
+          Canonical record digest does not match digital signature. Coordinates or presumptive result were altered post-seizure.
+        </p>
+
+        <div class="space-y-1 font-mono text-[10px] pt-2 border-t border-red-200">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Stored Hash:</span>
+            <span id="tamperModalStoredHash" class="text-slate-900 truncate w-48">8d63a948e9c402b1f83c18b764a8520df9420b9e84726511a3b8392ef401af10</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Calculated Hash:</span>
+            <span id="tamperModalCalcHash" class="text-redAlert font-bold truncate w-48">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-[11px] text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
+        <strong>Automatic Remedial Actions:</strong>
+        <ul class="list-disc pl-4 mt-1 space-y-0.5 text-[10px]">
+          <li>Record flagged as <strong>TAMPER_ALERT</strong> and locked from court export.</li>
+          <li>High-priority audit log dispatched to NCB Internal Vigilance Directorate.</li>
+          <li>Physical sample seal re-verification mandatory at Malkhana.</li>
+        </ul>
+      </div>
+
+      <div class="flex space-x-2 pt-2">
+        <button onclick="closeTamperModal()" class="flex-1 bg-navy-900 hover:bg-navy-800 text-white font-bold py-2.5 rounded-lg text-xs transition">
+          Acknowledge & Dismiss
+        </button>
+        <button onclick="restoreRecordFromTamper(); closeTamperModal();" class="bg-govGreen hover:bg-emerald-600 text-white font-bold px-4 py-2.5 rounded-lg text-xs transition">
+          Restore Clean Record
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GOOGLE LENS STYLE BARCODE & QR SCANNER MODAL ================= -->
+  <div id="barcodeScannerModal" class="fixed inset-0 bg-navy-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full border border-slate-300 p-4 sm:p-5 shadow-2xl space-y-3.5">
+      
+      <!-- Lens Modal Header -->
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+        <div class="flex items-center space-x-2.5 text-navy-900">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 text-white flex items-center justify-center shadow-sm">
+            <i data-lucide="scan" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <h3 class="text-sm sm:text-base font-bold text-navy-900">NIRIKSHAN Lens</h3>
+              <span class="text-[10px] bg-electric/10 text-electric font-mono font-bold px-1.5 py-0.5 rounded border border-electric/30">Google Lens AI</span>
+            </div>
+            <p class="text-[11px] text-slate-500">Live Optical Barcode, QR & Reagent Lot Detector</p>
+          </div>
+        </div>
+        <button onclick="closeBarcodeScannerModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Google Lens Viewfinder Box -->
+      <div class="relative aspect-video bg-navy-950 rounded-xl overflow-hidden border-2 border-electric/70 shadow-inner flex items-center justify-center">
+        
+        <!-- Live Video Element for Real Mobile Camera Feed -->
+        <video id="lensVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover hidden"></video>
+
+        <!-- Canvas for Fallback / Processing / Drawing Reticle -->
+        <canvas id="scannerCanvas" width="640" height="360" class="w-full h-full object-cover"></canvas>
+        
+        <!-- Google Lens Animated Optical Brackets & Reticle -->
+        <div class="absolute inset-0 pointer-events-none p-4 sm:p-5 flex flex-col justify-between items-center">
+          
+          <!-- Top HUD Status Row -->
+          <div class="w-full flex justify-between items-center text-[10px] font-mono text-cyanAccent bg-navy-950/80 backdrop-blur px-2.5 py-1 rounded-full border border-cyanAccent/30">
+            <span class="flex items-center space-x-1.5">
+              <span class="w-2 h-2 rounded-full bg-cyanAccent pulse-live"></span>
+              <span id="lensStatusText">SEARCHING FOR BARCODE / QR...</span>
+            </span>
+            <span id="lensCameraModeTag" class="text-slate-300 font-semibold">REAR CAMERA (1080p)</span>
+          </div>
+
+          <!-- Central Google Lens Target Reticle -->
+          <div id="lensTargetReticle" class="w-56 sm:w-64 h-28 sm:h-32 border border-cyanAccent/40 rounded-xl relative flex items-center justify-center bg-cyanAccent/5 transition-all">
+            <div class="lens-target-bracket lens-corner-tl"></div>
+            <div class="lens-target-bracket lens-corner-tr"></div>
+            <div class="lens-target-bracket lens-corner-bl"></div>
+            <div class="lens-target-bracket lens-corner-br"></div>
+            
+            <!-- Pulsing Sweeping Laser Line -->
+            <div id="lensLaserLine" class="absolute w-full h-0.5 bg-cyanAccent shadow-[0_0_14px_#49D9E8] lens-laser-sweep"></div>
+            
+            <!-- Real-time Detected Code Tag Pill (Appears when code detected) -->
+            <div id="lensDetectedTag" class="hidden absolute -top-3.5 bg-govGreen text-white text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full shadow-lg border border-white flex items-center space-x-1 animate-bounce">
+              <i data-lucide="check-circle" class="w-3 h-3"></i>
+              <span id="lensDetectedCodeText">CODE DETECTED</span>
+            </div>
+
+            <span id="lensReticleGuide" class="text-[10px] font-mono text-cyanAccent bg-navy-900/90 px-2 py-0.5 rounded border border-cyanAccent/40 shadow-xs">
+              ALIGN BARCODE OR QR CODE
+            </span>
+          </div>
+
+          <!-- Bottom HUD Footer -->
+          <div class="flex items-center space-x-2 text-[10px] text-slate-300 font-mono bg-navy-950/85 backdrop-blur px-3 py-1 rounded-full border border-navy-700">
+            <i data-lucide="scan-line" class="w-3 h-3 text-cyanAccent"></i>
+            <span>REAL-TIME MULTI-FORMAT OPTICAL DETECTOR</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Camera Action Controls Bar -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+        
+        <!-- Left: Real Mobile Camera Toggles -->
+        <div class="flex items-center space-x-1.5">
+          <button onclick="toggleLensCamera()" id="btnToggleLensCam" class="px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold text-[11px] flex items-center space-x-1 shadow-2xs transition">
+            <i data-lucide="camera" class="w-3.5 h-3.5 text-electric"></i>
+            <span id="lensCamToggleText">Camera Active</span>
+          </button>
+          
+          <button onclick="switchLensCameraFacing()" id="btnLensSwitchCam" title="Switch Front/Rear Camera" class="p-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 text-[11px] flex items-center shadow-2xs transition">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-600"></i>
+          </button>
+
+          <button onclick="toggleLensTorch()" id="btnLensTorch" title="Toggle Flashlight / Torch" class="p-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 text-[11px] flex items-center shadow-2xs transition">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-amberWarn"></i>
+          </button>
+        </div>
+
+        <!-- Right: Direct Mobile Camera Snapshot Capture / Image File Upload -->
+        <div class="flex items-center space-x-1.5">
+          <label class="cursor-pointer px-2.5 py-1.5 bg-electric hover:bg-blue-600 text-white rounded-lg font-bold text-[11px] flex items-center space-x-1 shadow-xs transition">
+            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <span>Snap Photo</span>
+            <input type="file" id="lensPhotoFileInput" accept="image/*" capture="environment" class="hidden" onchange="handleLensPhotoFile(event)">
+          </label>
+          
+          <label class="cursor-pointer px-2 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg font-semibold text-slate-700 text-[11px] flex items-center space-x-1 shadow-2xs transition">
+            <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span class="hidden sm:inline">Upload</span>
+            <input type="file" id="lensUploadFileInput" accept="image/*" class="hidden" onchange="handleLensPhotoFile(event)">
+          </label>
+        </div>
+
+      </div>
+
+      <!-- Quick Test Kit Presets (Instant Simulation Mode) -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold text-slate-700 text-[11px] flex items-center space-x-1">
+            <i data-lucide="cpu" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span>Fast Kit Simulation Presets (1-Click Apply):</span>
+          </span>
+          <span class="text-[10px] text-slate-400">Standard NCB Reagents</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs">
+          <button onclick="applyScannedBarcode('MDT-884291', 'marquis')" class="p-2 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-lg text-left transition shadow-2xs">
+            <div class="font-bold text-navy-900 font-mono text-[11px]">MDT-884291</div>
+            <div class="text-[9px] text-purple-700 font-semibold truncate">Marquis (Opioids)</div>
+          </button>
+          <button onclick="applyScannedBarcode('MDT-884292', 'duquenois')" class="p-2 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-govGreen rounded-lg text-left transition shadow-2xs">
+            <div class="font-bold text-navy-900 font-mono text-[11px]">MDT-884292</div>
+            <div class="text-[9px] text-govGreen font-semibold truncate">Duquenois (Cannabis)</div>
+          </button>
+          <button onclick="applyScannedBarcode('MDT-884293', 'scott')" class="p-2 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-lg text-left transition shadow-2xs">
+            <div class="font-bold text-navy-900 font-mono text-[11px]">MDT-884293</div>
+            <div class="text-[9px] text-blue-700 font-semibold truncate">Scott (Cocaine)</div>
+          </button>
+          <button onclick="applyScannedBarcode('MDT-884295', 'fentanyl')" class="p-2 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-red-300 rounded-lg text-left transition shadow-2xs">
+            <div class="font-bold text-navy-900 font-mono text-[11px]">MDT-884295</div>
+            <div class="text-[9px] text-redAlert font-semibold truncate">Fentanyl Rapid Strip</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer Action -->
+      <div class="pt-1 flex justify-end">
+        <button onclick="closeBarcodeScannerModal()" class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition">
+          Close Lens
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verification Pass Toast -->
+  <div id="toastSuccess" class="fixed bottom-5 right-5 bg-navy-900 text-white border border-govGreen px-4 py-3 rounded-xl shadow-2xl hidden flex items-center space-x-3 z-50">
+    <div class="w-8 h-8 rounded-full bg-govGreen/20 flex items-center justify-center text-govGreen">
+      <i data-lucide="check" class="w-4 h-4"></i>
+    </div>
+    <div class="text-xs">
+      <div id="toastTitle" class="font-bold text-white">Verification Confirmed</div>
+      <div id="toastDesc" class="text-slate-300 text-[11px]">Cryptographic hash matches PKI government signature.</div>
+    </div>
+  </div>
+
+  <!-- App Logic JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>

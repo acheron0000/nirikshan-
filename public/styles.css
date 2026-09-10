@@ -1,0 +1,246 @@
+/* NIRIKSHAN - Digital Field Drug Testing & Intelligence Platform Styling */
+
+:root {
+  --navy-950: #040e18;
+  --navy-900: #071A2B;
+  --navy-800: #0c253d;
+  --navy-700: #133454;
+  --navy-600: #1b476f;
+  --blue-primary: #1C8CFF;
+  --cyan-accent: #49D9E8;
+  --amber-warning: #F6B73C;
+  --red-alert: #E95D63;
+  --green-success: #10B981;
+  --bg-slate: #F4F7FA;
+  --surface-card: #FFFFFF;
+  --border-subtle: #E2E8F0;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-slate);
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+.mono-font {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}
+
+/* Radar Animation for Live Operations */
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.radar-sweep {
+  animation: radar-sweep 4s linear infinite;
+  transform-origin: center center;
+}
+
+/* Pulse Glows */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.08); }
+}
+
+.pulse-live {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Security Breach Flash Animation */
+@keyframes alert-flash {
+  0%, 100% { border-color: rgba(233, 93, 99, 0.9); box-shadow: 0 0 25px rgba(233, 93, 99, 0.4); }
+  50% { border-color: rgba(233, 93, 99, 0.3); box-shadow: 0 0 5px rgba(233, 93, 99, 0.1); }
+}
+
+.tamper-breach-active {
+  animation: alert-flash 1.2s infinite;
+}
+
+/* Camera Reticle Overlay */
+.camera-reticle {
+  position: absolute;
+  pointer-events: none;
+  border: 2px dashed rgba(73, 217, 232, 0.8);
+  box-shadow: 0 0 0 9999px rgba(7, 26, 43, 0.45);
+  border-radius: 8px;
+}
+
+.camera-reticle::before,
+.camera-reticle::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: #49D9E8;
+  border-style: solid;
+}
+
+.corner-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; }
+.corner-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; }
+.corner-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; }
+.corner-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
+
+/* India Map SVG styling */
+.india-state {
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  stroke: #FFFFFF;
+  stroke-width: 0.75;
+}
+
+.india-state:hover {
+  filter: brightness(1.2) drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+  stroke-width: 1.5;
+  stroke: #1C8CFF;
+}
+
+.india-state.selected {
+  stroke: #071A2B;
+  stroke-width: 2.2;
+}
+
+/* Print Specifics for Court Slip */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .court-slip-container {
+    box-shadow: none !important;
+    border: 1px solid #333 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ================= GOOGLE LENS SCANNER ANIMATIONS ================= */
+@keyframes lens-laser {
+  0% {
+    top: 5%;
+    opacity: 0.85;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.85;
+  }
+}
+
+.lens-laser-sweep {
+  animation: lens-laser 2.2s ease-in-out infinite;
+  box-shadow: 0 0 14px #49D9E8, 0 0 28px rgba(73, 217, 232, 0.6);
+}
+
+@keyframes lens-ping {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.lens-box-pulse {
+  animation: lens-ping 1.5s ease-in-out infinite;
+}
+
+.lens-target-bracket {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: #49D9E8;
+  border-style: solid;
+  transition: all 0.25s ease;
+}
+
+.lens-corner-tl { top: -2px; left: -2px; border-width: 3.5px 0 0 3.5px; border-top-left-radius: 8px; }
+.lens-corner-tr { top: -2px; right: -2px; border-width: 3.5px 3.5px 0 0; border-top-right-radius: 8px; }
+.lens-corner-bl { bottom: -2px; left: -2px; border-width: 0 0 3.5px 3.5px; border-bottom-left-radius: 8px; }
+.lens-corner-br { bottom: -2px; right: -2px; border-width: 0 3.5px 3.5px 0; border-bottom-right-radius: 8px; }
+
+.lens-detected-highlight {
+  border: 2px solid #10B981 !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5) !important;
+}
+
+/* ================= GPT INTELLIGENCE & SPECTRAL ANALYSIS STYLES ================= */
+
+/* Citation pills */
+.gpt-citation-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+  color: #3730A3;
+  border: 1px solid #C7D2FE;
+  transition: all 0.2s;
+  cursor: default;
+}
+.gpt-citation-pill:hover {
+  background: linear-gradient(135deg, #C7D2FE, #A5B4FC);
+  color: #1E1B4B;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+}
+
+/* Spectral wavelength bars */
+.spectral-bar {
+  flex: 1;
+  min-width: 4px;
+  border-radius: 2px 2px 0 0;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+.spectral-bar-peak {
+  opacity: 1;
+  box-shadow: 0 0 8px currentColor;
+  animation: spectralPulse 2s infinite ease-in-out;
+}
+
+@keyframes spectralPulse {
+  0%, 100% { opacity: 1; transform: scaleY(1); }
+  50% { opacity: 0.8; transform: scaleY(1.08); }
+}
+
+/* GPT Analysis Container entrance animation */
+#gptAnalysisContainer {
+  animation: gptSlideIn 0.4s ease-out;
+}
+@keyframes gptSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
